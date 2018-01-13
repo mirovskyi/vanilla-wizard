@@ -1,0 +1,49 @@
+<html>
+<head>
+    <script src="wizard.js"></script>
+</head>
+<body>
+<div class="content">
+    <div class="step">
+        <h1>Step 1</h1>
+    </div>
+    <div class="step">
+        <h1>Step 2</h1>
+    </div>
+    <div class="step">
+        <h1>Step 3</h1>
+    </div>
+    <div class="step">
+        <h1>Step 4</h1>
+    </div>
+    <div class="step">
+        <h1>Step 5</h1>
+    </div>
+    <div class="step">
+        <h1>Step 6</h1>
+    </div>
+    <div class="step">
+        <h1>Step 7</h1>
+    </div>
+    <div class="step">
+        <h1>Step 8</h1>
+    </div>
+    <input type="button" value="Prev" id="prev" />
+    <input type="button" value="Next" id="next" />
+</div>
+<script type="text/javascript">
+    var wizard = new Wizard({
+        stepContentClass: 'step',
+        nextButton: document.getElementById('next'),
+        prevButton: document.getElementById('prev'),
+        before: function(e) {
+            console.log(e);
+        },
+        after: function(e) {
+            console.log(e);
+        }
+    });
+    wizard.start();
+</script>
+</body>
+</html>
