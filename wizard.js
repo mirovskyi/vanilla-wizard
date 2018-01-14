@@ -1,16 +1,16 @@
 var Wizard = function(options) {
     var _step;
     var settings = {
-        steps: null,
-        stepContentClass: null,
-        startStep: 1,
         activeClass: 'active',
         hideInactiveContent: true,
         inactiveButtonAction: 'hide', //available actions: 'hide', 'disable'
         nextButton: null,
         prevButton: null,
-        before: function() {},
-        after: function() {}
+        startStep: 1,
+        stepContentClass: null,
+        steps: null,
+        after: function() {},
+        before: function() {}
     };
     //Merge options
     for (var prop in options) {
@@ -68,22 +68,20 @@ var Wizard = function(options) {
     };
 
     /**
-     * Go to provided step
-     * @param {int} newStep
+     * Dispatch after event
+     * @param {int} current
+     * @param {int} previous
      */
-    var goto = function(newStep) {
-        if (newStep < 1 || newStep > settings.steps) {
-            throw new Error('Step is out of wizard bounds');
+    var dispatchAfter = function(current, previous) {
+        if (settings.after) {
+            var event = {
+                current: current,
+                previous: previous,
+                first: isFirst(current),
+                last: isLast(current)
+            };
+            settings.after(event, this);
         }
-        //Dispatch before event
-        if (dispatchBefore(_step, newStep) === false) {
-            return;
-        }
-        //Change step
-        var prevStep = _step;
-        changeStep(newStep);
-        //Dispatch after event
-        dispatchAfter(_step, prevStep);
     };
 
     /**
@@ -107,38 +105,22 @@ var Wizard = function(options) {
     };
 
     /**
-     * Dispatch after event
-     * @param {int} current
-     * @param {int} previous
+     * Go to provided step
+     * @param {int} newStep
      */
-    var dispatchAfter = function(current, previous) {
-        if (settings.after) {
-            var event = {
-                current: current,
-                previous: previous,
-                first: isFirst(current),
-                last: isLast(current)
-            };
-            settings.after(event, this);
+    var goto = function(newStep) {
+        if (newStep < 1 || newStep > settings.steps) {
+            throw new Error('Step is out of wizard bounds');
         }
-    };
-
-    /**
-     * Check is first step
-     * @param {int} step
-     * @returns {boolean}
-     */
-    var isFirst = function(step) {
-        return step <= 1;
-    };
-
-    /**
-     * Check is last step
-     * @param {int} step
-     * @returns {boolean}
-     */
-    var isLast = function(step) {
-        return step >= settings.steps;
+        //Dispatch before event
+        if (dispatchBefore(_step, newStep) === false) {
+            return;
+        }
+        //Change step
+        var prevStep = _step;
+        changeStep(newStep);
+        //Dispatch after event
+        dispatchAfter(_step, prevStep);
     };
 
     /**
@@ -163,26 +145,44 @@ var Wizard = function(options) {
         }
     };
 
+    /**
+     * Check is first step
+     * @param {int} step
+     * @returns {boolean}
+     */
+    var isFirst = function(step) {
+        return step <= 1;
+    };
+
+    /**
+     * Check is last step
+     * @param {int} step
+     * @returns {boolean}
+     */
+    var isLast = function(step) {
+        return step >= settings.steps;
+    };
+
     return {
-        start: function() {
-            changeStep(settings.startStep);
-        },
-        forward: function() {
-            if (isLast(_step)) {
-                throw new Error('Failed to go next step. You have reached last step already.');
-            }
-            goto(_step + 1);
-        },
-        backward: function() {
+        back: function() {
             if (isFirst(_step)) {
                 throw new Error('Failed to go previous step. You are on the first step.');
             }
             goto(_step - 1)
         },
+        current: function() { return _step },
         first: function () { return goto(1) },
-        last: function() { goto(settings.steps) },
-        jump: function(step) { goto(step) },
         isFirst: function() { isFirst(_step) },
-        isLast: function() { isLast(_step) }
+        isLast: function() { isLast(_step) },
+        jump: function(step) { goto(step) },
+        last: function() { goto(settings.steps) },
+        length: function() { return settings.steps },
+        next: function() {
+            if (isLast(_step)) {
+                throw new Error('Failed to go next step. You have reached last step already.');
+            }
+            goto(_step + 1);
+        },
+        start: function() { changeStep(settings.startStep) }
     }
 };
